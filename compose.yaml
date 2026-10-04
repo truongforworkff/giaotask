@@ -1,0 +1,13 @@
+services:
+  bot:
+    build: .
+    init: true
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_PATH: /app/data/default.sqlite
+    volumes:
+      - taskbot-data:/app/data
+    stop_grace_period: 45s
+volumes:
+  taskbot-data:

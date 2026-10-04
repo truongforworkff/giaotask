@@ -1,0 +1,4 @@
+[
+  {"id":"T-001","title":"Define project scope","description":"Agree on goals and acceptance criteria.","effort":1,"depends":[]},
+  {"id":"T-002","title":"Build the first milestone","description":"Implement the approved scope.","effort":2,"depends":["T-001"]}
+]

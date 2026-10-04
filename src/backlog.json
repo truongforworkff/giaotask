@@ -1,0 +1,187 @@
+[
+  {
+    "id": "BE-000",
+    "depends": [],
+    "effort": 1,
+    "description": "Scope\nChot domain backend theo mo hinh Exam -> ExamSection -> Question / Media.\nExamSection.type phai ho tro READING, LISTENING, WRITING, SPEAKING.\nListeningSession va ListeningPlaybackEvent la module rieng cho LISTENING section.\nThiet ke ImportJob/worker flow cho giao vien upload file -> parse -> draft exam -> review -> publish.\nDe xuat API boundary, response format, error format, pagination, auth, authorization, timestamps va ID convention.\nOutput\nDomain diagram moi.\nDatabase schema proposal moi.\nEntity relationship list.\nAPI endpoint proposal.\nNormalized Exam Schema proposal.\nImportJob + worker flow.\nDanh sach schema cu giu, doi, bo.\nAcceptance criteria\nMot Exam co the chua nhieu Section.\nQuestion khong phu thuoc truc tiep vao Listening.\nMedia gan duoc voi Section hoac Question theo thiet ke ro rang.\nAttempt tham chieu dung Exam/version hoc sinh da lam.\nAnswer key khong xuat hien trong response danh cho Student.\nFile import dung asynchronous job model, khong parse nang trong HTTP request.\n",
+    "title": "Finalize Backend Domain Architecture"
+  },
+  {
+    "id": "BE-001",
+    "depends": [
+      "BE-000"
+    ],
+    "effort": 1,
+    "description": "Scope\nKhoi tao backend project TypeScript.\nCau hinh environment, config loader va validation cho bien moi truong.\nKet noi PostgreSQL.\nSetup migration system.\nSetup Docker cho app va database.\nTao GET /health.\nChuan hoa structure module / service / controller.\nOutput\nBackend chay local bang Docker.\nKet noi DB thanh cong.\nGET /health tra 200 OK voi body { status: \"ok\" }.\nAcceptance criteria\nKhong hard-code credentials.\nCo .env.example.\nMigration command chay duoc.\nProject co README huong dan chay local.\nChua implement business logic.\n",
+    "title": "Setup Backend Foundation"
+  },
+  {
+    "id": "BE-002",
+    "depends": [
+      "BE-001"
+    ],
+    "effort": 1,
+    "description": "Scope\nTao bang users, roles, user_roles.\nusers gom username unique, password_hash, status, created_at, updated_at.\nSeed roles ADMIN, TEACHER, STUDENT.\nChuan bi relationship cho Student va Teacher profile.\nOutput\nMigration tao user/role schema.\nSeed co san 3 roles.\nAcceptance criteria\nKhong luu plaintext password.\nUsername unique.\nRole seed chay lap lai khong tao duplicate.\nChua lam login API.\n",
+    "title": "User And Role Database"
+  },
+  {
+    "id": "BE-003",
+    "depends": [
+      "BE-001"
+    ],
+    "effort": 1,
+    "description": "Scope\nDinh nghia format success response, error response va validation error.\nDinh nghia pagination format cho list API.\nTao global validation pipe/middleware.\nTao exception filter/error mapper.\nOutput\nResponse contract dung chung.\nValidation va error response thong nhat.\nAcceptance criteria\nAPI loi validation tra field-level errors.\nKhong leak stack trace ra client.\nCac endpoint sau nay dung chung contract nay.\n",
+    "title": "Global API Contract Validation And Error Handling"
+  },
+  {
+    "id": "BE-004",
+    "depends": [
+      "BE-002",
+      "BE-003"
+    ],
+    "effort": 1,
+    "description": "Scope\nPOST /auth/login.\nPOST /auth/logout.\nPOST /auth/refresh.\nGET /auth/me.\nPassword hashing.\nJWT/session strategy, refresh/session expiry.\nAccount locked/inactive handling.\nOutput\nAuth API hoat dong cho ADMIN, TEACHER, STUDENT.\nAccess token va refresh/session flow.\nAcceptance criteria\nInvalid login tra loi chung, khong tiet lo username hay password sai.\nPassword compare dung hash.\nInactive/locked account khong login duoc.\nGET /auth/me tra current user va roles.\n",
+    "title": "Authentication"
+  },
+  {
+    "id": "BE-005",
+    "depends": [
+      "BE-004"
+    ],
+    "effort": 1,
+    "description": "Scope\nTao guard/middleware kiem tra role.\nEnforce permission o backend cho ADMIN, TEACHER, STUDENT.\nDinh nghia route-level permission cho cac module chinh.\nOutput\nRBAC guard dung chung.\nTest case cho endpoint can role.\nAcceptance criteria\nFrontend an button khong duoc xem la security.\nUser sai role nhan 403.\nUser chua login nhan 401.\n",
+    "title": "Authorization And RBAC"
+  },
+  {
+    "id": "BE-006",
+    "depends": [
+      "BE-005"
+    ],
+    "effort": 1,
+    "description": "Scope\nTao Student, Teacher, Class, ClassMembership entities.\nPOST /students, GET /students, GET /students/:id, PATCH /students/:id.\nPOST /students/:id/reset-password.\nPATCH /students/:id/status.\nCRUD co ban cho teachers/classes va quan ly membership.\nSearch, filter, pagination.\nOutput\nAdmin/Teacher co the quan ly hoc sinh, giao vien, lop hoc va thanh vien lop.\nAcceptance criteria\nKhong duplicate membership.\nList API co pagination.\nReset password tao password hash moi.\nStatus inactive/locked anh huong login va assignment visibility theo rule.\n",
+    "title": "Student Teacher And Class Management"
+  },
+  {
+    "id": "BE-007",
+    "depends": [
+      "BE-000",
+      "BE-005"
+    ],
+    "effort": 1,
+    "description": "Scope\nTao Exam entity va lifecycle draft/published/archived.\nPOST /exams, GET /exams, GET /exams/:id, PATCH /exams/:id, DELETE /exams/:id.\nHo tro versioning de giu lich su bai da lam khi giao vien sua de.\nOutput\nExam CRUD cho Teacher/Admin.\nExam response co sections placeholder.\nAcceptance criteria\nStudent khong xem duoc draft exam.\nDelete nen la soft delete/archive neu exam da co attempt.\nVersioning khong lam hong attempt cu.\n",
+    "title": "Exam Core"
+  },
+  {
+    "id": "BE-008",
+    "depends": [
+      "BE-007"
+    ],
+    "effort": 1,
+    "description": "Scope\nPOST /exams/:examId/sections.\nPATCH /sections/:id.\nDELETE /sections/:id.\nSection type gom READING, LISTENING, WRITING, SPEAKING.\nHo tro order va section-specific config.\nOutput\nExam co the co nhieu section theo dung thu tu.\nAcceptance criteria\nKhong tao bon he database rieng biet cho bon ky nang.\nSection order on dinh.\nXoa section phai xu ly question/media lien quan theo rule ro rang.\n",
+    "title": "Exam Section"
+  },
+  {
+    "id": "BE-009",
+    "depends": [
+      "BE-008"
+    ],
+    "effort": 1,
+    "description": "Scope\nPOST /sections/:sectionId/questions.\nGET /sections/:sectionId/questions.\nPATCH /questions/:questionId.\nDELETE /questions/:questionId.\nPOST /questions/reorder.\nSupport question types MULTIPLE_CHOICE, TRUE_FALSE, CHOOSE_CORRECT, SHORT_ANSWER, MATCHING.\nTao QuestionOption va AnswerKey.\nOutput\nQuestion engine dung chung cho cac section.\nAcceptance criteria\nStudent API khong tra answer_key.\nTeacher/Admin API duoc xem answer_key.\nQuestion validation theo type.\nReorder khong lam mat question.\n",
+    "title": "Question Engine"
+  },
+  {
+    "id": "BE-010",
+    "depends": [
+      "BE-008"
+    ],
+    "effort": 1,
+    "description": "Scope\nPOST /media/upload.\nDELETE /media/:id.\nValidate MIME va file size.\nGenerate file ID va storage key.\nLuu metadata: type, storage_key, mime_type, size, duration, created_at.\nGan media vao Section hoac Question.\nOutput\nUpload audio/image/document reference dung duoc cho exam.\nAcceptance criteria\nKhong luu binary audio/video truc tiep trong PostgreSQL.\nFile qua size hoac sai MIME bi reject.\nDelete xu ly metadata va object storage theo rule.\n",
+    "title": "Media Upload"
+  },
+  {
+    "id": "BE-011",
+    "depends": [
+      "BE-007",
+      "BE-006"
+    ],
+    "effort": 1,
+    "description": "Scope\nPOST /exams/:id/assignments.\nGET /students/me/assignments.\nGET /students/:id/assignments.\nAssign exam cho Student hoac Class.\nHo tro due date va assignment status neu can.\nOutput\nHoc sinh thay danh sach exam duoc giao.\nAcceptance criteria\nChong duplicate khi student vua duoc assign truc tiep vua thuoc class duoc assign.\nStudent chi thay assignment cua minh.\nTeacher/Admin xem duoc assignment theo phan quyen.\n",
+    "title": "Assignment"
+  },
+  {
+    "id": "BE-012",
+    "depends": [
+      "BE-011",
+      "BE-009"
+    ],
+    "effort": 1,
+    "description": "Scope\nPOST /exams/:id/attempts.\nGET /attempts/:id.\nPATCH /attempts/:id/answers.\nPOST /attempts/:id/submit.\nState NOT_STARTED, IN_PROGRESS, SUBMITTED, GRADED.\nOutput\nHoc sinh bat dau lam bai, luu cau tra loi, nop bai.\nAcceptance criteria\nAttempt gan dung exam version.\nStudent khong sua attempt da submitted tru khi co rule ro rang.\nBackend la source of truth cho score, khong luu score client gui len.\n",
+    "title": "Attempt Lifecycle"
+  },
+  {
+    "id": "BE-013",
+    "depends": [
+      "BE-012"
+    ],
+    "effort": 1,
+    "description": "Scope\nCham diem cac question objective dua tren AnswerKey.\nLuu score, max_score va grading status.\nChua bat buoc auto-grade Writing/Speaking neu chua co rubric.\nOutput\nAttempt submitted duoc cham diem phan objective.\nAcceptance criteria\nFrontend khong the tu set score.\nScore tinh tu answer luu trong AttemptAnswer.\nCau chua support auto-grade duoc danh dau needs_manual_grading.\n",
+    "title": "Scoring Engine"
+  },
+  {
+    "id": "BE-014",
+    "depends": [
+      "BE-012",
+      "BE-010"
+    ],
+    "effort": 1,
+    "description": "Scope\nPOST /listening/sessions.\nPOST /listening/sessions/:id/events.\nPOST /listening/sessions/:id/end.\nEvents gom PLAY, PAUSE, SEEK, HEARTBEAT, END.\nFrontend gui eventId, type, position, clientTimestamp.\nBackend reconstruct actualListeningTime tu event log.\nOutput\nListening time tracking rieng cho LISTENING section.\nAcceptance criteria\nKhong tin listeningTime tong do client gui len.\nEventId idempotent de tranh duplicate.\nListening tracking khong anh huong Reading/Writing/Speaking.\n",
+    "title": "Listening Session And Playback Events"
+  },
+  {
+    "id": "BE-015",
+    "depends": [
+      "BE-000",
+      "BE-007",
+      "BE-010"
+    ],
+    "effort": 1,
+    "description": "Scope\nPOST /exam-imports tra 202 Accepted va jobId.\nGET /exam-imports/:id tra status va result/error.\nHo tro input DOCX, PDF, audio, images, ZIP/package theo kha nang MVP.\nTao ImportJob status UPLOADED, PROCESSING, NEEDS_REVIEW, READY, FAILED.\nLuu file vao storage, parser/worker xu ly bat dong bo.\nMap ket qua parse vao Normalized Exam Schema va Draft Exam.\nOutput\nTeacher upload file va theo doi job.\nParse thanh draft exam can review.\nAcceptance criteria\nKhong parse file nang trong HTTP request.\nJob loi co error reason ro rang.\nDraft exam chua publish cho student cho den khi teacher review/publish.\n",
+    "title": "Exam File Import"
+  },
+  {
+    "id": "BE-016",
+    "depends": [
+      "BE-012",
+      "BE-013",
+      "BE-014"
+    ],
+    "effort": 1,
+    "description": "Scope\nGET /reports/students.\nGET /reports/classes.\nGET /reports/exams.\nGET /reports/listening.\nFilters: student, class, week, month, exam.\nOutput\nBao cao ket qua hoc sinh/lop/de thi/listening.\nAcceptance criteria\nMetric dua tren attempt va playback events that.\nBao cao ton trong RBAC.\nQuery co pagination hoac export strategy neu data lon.\n",
+    "title": "Reports"
+  },
+  {
+    "id": "BE-017",
+    "depends": [
+      "BE-000",
+      "BE-001",
+      "BE-002",
+      "BE-003",
+      "BE-004",
+      "BE-005",
+      "BE-006",
+      "BE-007",
+      "BE-008",
+      "BE-009",
+      "BE-010",
+      "BE-011",
+      "BE-012",
+      "BE-013",
+      "BE-014",
+      "BE-015",
+      "BE-016"
+    ],
+    "effort": 1,
+    "description": "Scope\nLogging request/error co correlation ID.\nRate limit cho auth va upload.\nAudit log cho action quan trong.\nBackup/migration rollback strategy.\nSecurity review cho auth, RBAC, answer key exposure, file upload.\nOutput\nBackend san sang staging/UAT.\nAcceptance criteria\nCo log du de debug loi production.\nUpload co validation va gioi han.\nKhong expose answer key hoac sensitive data.\nCo tai lieu deploy/staging env.\n",
+    "title": "Operational Hardening"
+  }
+]
